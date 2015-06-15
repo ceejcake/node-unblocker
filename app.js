@@ -13,7 +13,8 @@
 var http = require('http'),
     https = require('https'),
     url = require('url'),
-    querystring = require('querystring');
+    querystring = require('querystring'),
+    auth = require('http-auth');
 
 // for great performance!
 // kind of hard to see much difference in local testing, but I think this should make an appreciable improvement in production
@@ -38,9 +39,18 @@ var connect = require('connect'), // todo: call by version once 2.x is listed in
     RedisStore = require('connect-redis')(connect),
     redis;
 
+// Basic authentication setup
+var basic = auth.basic({
+        realm: "Private Use Only!"
+    }, function (username, password, callback) { // Custom authentication method.
+        callback(username === process.env.PROXYUSER && password === process.env.PROXYPASS);
+    }
+);
+
+
 function handleRequest(request, response) {
 
-    // convenience methods 
+    // convenience methods
     request.thisHost = thisHost.bind(thisHost, request);
     request.thisSite = thisSite.bind(thisSite, request);
     response.redirectTo = redirectTo.bind(redirectTo, request, response);
@@ -48,7 +58,7 @@ function handleRequest(request, response) {
     var url_data = url.parse(request.url);
 
     // if the user requested the "home" page
-    // (located at /proxy so that we can more easily tell the difference 
+    // (located at /proxy so that we can more easily tell the difference
     // between a user who is looking for the home page and a "/" link)
     if (url_data.pathname == "/proxy") {
         request.url = "/index.html";
@@ -69,7 +79,7 @@ function handleRequest(request, response) {
         response.redirectTo(site || "");
     }
 
-    // only requests that start with this get proxied - the rest get 
+    // only requests that start with this get proxied - the rest get
     // redirected to either a url that matches this or the home page
     if (url_data.pathname.indexOf("/proxy/http") === 0) {
 
@@ -127,7 +137,7 @@ function handleUnknown(request, response) {
         return response.redirectTo(real_url.protocol + "//" + real_url.host + request.url);
     }
 
-    // else they were refered by something on this site that wasn't the home page and didn't come 
+    // else they were refered by something on this site that wasn't the home page and didn't come
     // through the proxy - aka this shouldn't happen
     response.redirectTo("");
 }
@@ -176,8 +186,14 @@ function initApp() {
     }
     redis.unref();
 
-    return connect()
-        .use(connect.cookieParser(config.secret))
+    var conn = connect();
+
+    if (process.env.PROXYUSER && process.env.PROXYPASS) {
+        console.log('hi');
+        conn = conn.use(auth.connect(basic));
+    }
+
+    conn.use(connect.cookieParser(config.secret))
         .use(connect.session({
             store: new RedisStore({
                 client: redis
@@ -190,6 +206,8 @@ function initApp() {
             }
         }))
         .use(handleRequest);
+
+    return conn;
 }
 
 function getApp(withRedis) {
