@@ -189,7 +189,6 @@ function initApp() {
     var conn = connect();
 
     if (process.env.PROXYUSER && process.env.PROXYPASS) {
-        console.log('hi');
         conn = conn.use(auth.connect(basic));
     }
 
