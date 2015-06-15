@@ -154,7 +154,13 @@ function thisHost(request) {
 
 // returns the http://site.com/proxy
 function thisSite(request) {
-    return 'http://' + thisHost(request) + '/proxy';
+
+    var protocol = 'http://';
+    if (config.production) {
+        protocol = 'https://';
+    }
+
+    return protocol + thisHost(request) + '/proxy';
 }
 
 function redirectTo(request, response, site) {
