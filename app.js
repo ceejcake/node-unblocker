@@ -10,12 +10,13 @@
  */
 
 // native imports
-var http = require('http'),
-    https = require('https'),
-    url = require('url'),
-    querystring = require('querystring'),
-    auth = require('http-auth'),
-    redis = require('redis');
+var http = require('http');
+var https = require('https');
+var url = require('url');
+var querystring = require('querystring');
+var auth = require('http-auth');
+var redis = require('redis');
+var session = require('express-session');
 
 // for great performance!
 // kind of hard to see much difference in local testing, but I think this should make an appreciable improvement in production
@@ -37,7 +38,7 @@ serveStatic.setGa(googleAnalytics);
 
 // third-party dependencies
 var connect = require('connect'), // todo: call by version once 2.x is listed in npm
-    RedisStore = require('connect-redis')(connect);
+    RedisStore = require('connect-redis')(session);
 
 // Basic authentication setup
 var basic = auth.basic({
