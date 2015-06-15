@@ -9,6 +9,7 @@
     "connect": "^2.7.11",
     "connect-redis": "^1.4.7",
     "gatling": "^1.1.1",
+    "http-auth": "^2.2.8",
     "iconv": "^2.1.8",
     "mime": "~1.2.11",
     "newrelic": "^1.1.1",
