@@ -14,7 +14,8 @@ var http = require('http'),
     https = require('https'),
     url = require('url'),
     querystring = require('querystring'),
-    auth = require('http-auth');
+    auth = require('http-auth'),
+    redis = require('redis');
 
 // for great performance!
 // kind of hard to see much difference in local testing, but I think this should make an appreciable improvement in production
@@ -36,8 +37,7 @@ serveStatic.setGa(googleAnalytics);
 
 // third-party dependencies
 var connect = require('connect'), // todo: call by version once 2.x is listed in npm
-    RedisStore = require('connect-redis')(connect),
-    redis;
+    RedisStore = require('connect-redis')(connect);
 
 // Basic authentication setup
 var basic = auth.basic({
@@ -179,12 +179,19 @@ function redirectTo(request, response, site) {
 
 function initApp() {
     // the redis client differs depending on if you're using redistogo (heroku) or not
+
+    var redisObj;
+
     if (config.redistogo_url) {
-        redis = require('redis-url').connect(config.redistogo_url);
+        var url = require('url');
+        var redisUrl = url.parse(process.env.REDISTOGO_URL);
+        var redisAuth = redisUrl.auth.split(':');
+        redisObj = redis.createClient(redisUrl.port, redisUrl.hostname, null);
+        redisObj.auth(redisAuth[1]);
     } else {
-        redis = require('redis').createClient(config.redis_port, config.redis_host, config.redis_options);
+        redisObj = redis.createClient(config.redis_port, config.redis_host, config.redis_options);
     }
-    redis.unref();
+    redisObj.unref();
 
     var conn = connect();
 
@@ -195,7 +202,7 @@ function initApp() {
     conn.use(connect.cookieParser(config.secret))
         .use(connect.session({
             store: new RedisStore({
-                client: redis
+                client: redisObj
             }),
             key: 'unblocker.sid',
             cookie: {
