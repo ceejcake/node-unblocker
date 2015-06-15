@@ -1,52 +1,60 @@
 # node-unblocker
 
-A web proxy for evading corporate or government filters, similar to CGIproxy / PHProxy / Glype but 
-written in node.js. All data is processed and relayed to the client on the fly without unnecessary 
+[![Build Status](https://travis-ci.org/nfriedly/node-unblocker.png?branch=master)](https://travis-ci.org/nfriedly/node-unblocker)
+
+A web proxy for evading corporate or government filters, similar to CGIproxy / PHProxy / Glype but
+written in node.js. All data is processed and relayed to the client on the fly without unnecessary
 buffering.
 
-Any website that the proxy can access can now be reached by the proxy's users.
-
-[![Build Status](https://travis-ci.org/nfriedly/node-unblocker.png?branch=master)](https://travis-ci.org/nfriedly/node-unblocker)
+This fork of node-blocker is intended to be used as a personal tool. You can setup a basic authentication to allow use only with correct username and password.
 
 ### The magic part
 
-The script uses "pretty" urls which, besides looking pretty, allow links with relative paths 
-to just work without modification. (E.g. `<a href="path/to/file2.html"></a>`) 
+The script uses "pretty" urls which, besides looking pretty, allow links with relative paths
+to just work without modification. (E.g. `<a href="path/to/file2.html"></a>`)
 
-In addition to this, links that are relative to the root (E.g. `<a href="/path/to/file2.html"></a>`) 
-can be handled without modification by checking the referrer and 307 redirecting them to the proper 
+In addition to this, links that are relative to the root (E.g. `<a href="/path/to/file2.html"></a>`)
+can be handled without modification by checking the referrer and 307 redirecting them to the proper
 location in the referring site. (Although the proxy does attempt to rewrite these links to avoid the redirect.)
 
-Cookies are currently storred in the visitor's session on the server rather than being sent to the 
+Cookies are currently storred in the visitor's session on the server rather than being sent to the
 visitor's browser to avoid having a large number of (possibly conflicting) browser cookies once they
 have browsed several sites through the proxy.
 
 ## Installation on your system
 
-Requires [node.js](http://nodejs.org/) >= 0.8 (0.10 is recommended) and [Redis](http://redis.io/) for session storage. 
-Then [download node-unblocker](https://github.com/nfriedly/node-unblocker/archive/master.zip), `cd` into the directory, 
-and run `npm rebuild`. Optionally edit 
-config.js then run `npm start` to start the server. It should spawn a new instance for each CPU 
-core you have. 
+Requires [node.js](http://nodejs.org/) >= 0.12 and [Redis](http://redis.io/) for session storage.
+
+To install clone the repo, then run:
+
+    $ npm install
+    $ npm start
+
+To run with foreman, make sure foreman is installed, then run:
+
+    $ foreman start
 
 (Note: running `node app.js` *will not work*. The server code is in the [Gatling](https://npmjs.org/package/gatling) package, which the `npm start` command calls automatically.)
 
 ## Installation on Heroku
 
-This project should be runnable on a free [Heroku](http://www.heroku.com/) instance without 
-modification - see http://node-unblocker.herokuapp.com/proxy for an example. You will want to run the 
+This project should be runnable on a free [Heroku](http://www.heroku.com/) instance without
+modification - You will want to run the
 following commands:
 
     heroku addons:add redistogo
-    heroku config:add SECRET=<TYPE SOMETHING SECRET AND/OR RANDOM HERE>
-    
+    heroku config:set SECRET=<TYPE SOMETHING SECRET AND/OR RANDOM HERE>
+    heroku config:set PRODUCTION=true
+    heroku config:set PROXYUSER=<YOUR USERNAME>
+    heroku config:set PROXYPASS=<YOUR PASSWORD>
+
 This sets up a free redis cache instance and secures your cookies.
 
 Optionally, you may want to run one or both of the following lines:
 
     # newrelic monitoring so that you can be alerted when there's an issue
     heroku addons:add newrelic:stark
-    
+
     # google analytics so that you can see how much usage your proxy is getting
     heroku config:add GA_ID=[your Google Analytics ID, ex: UA-12345-78]
 
@@ -64,7 +72,7 @@ Optionally, you may want to run one or both of the following lines:
 ## License
 This project is released under the terms of the [GNU GPL version 3](http://www.gnu.org/licenses/gpl.html)
 
-## Contributors 
+## Contributors
 * [Nathan Friedly](http://nfriedly.com)
 * [Arturo Filastò](https://github.com/hellais)
 * [tfMen](https://github.com/tfMen)
@@ -157,9 +165,9 @@ This project is released under the terms of the [GNU GPL version 3](http://www.g
 * Added basic cookie support via sessions.
 * Urls that are relative to the root of the site are now processed in both html and css.
 * Now only buffers last few characters if a chunk appears to end in the middle of a url.
-	
+
 ### v0.2 - 2011-03-28
-* Added redirect support 
+* Added redirect support
 * Added gzip support
 * improved filters
 
