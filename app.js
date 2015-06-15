@@ -17,7 +17,6 @@ var querystring = require('querystring');
 var auth = require('http-auth');
 var redis = require('redis');
 var session = require('express-session');
-var cookieParser = require('cookie-parser');
 
 // for great performance!
 // kind of hard to see much difference in local testing, but I think this should make an appreciable improvement in production
@@ -201,15 +200,18 @@ function initApp() {
         conn = conn.use(auth.connect(basic));
     }
 
-    conn.use(cookieParser(config.secret))
-        .use(session({
+    conn.use(session({
+            secret: config.secret,
+            resave: true,
+            saveUninitialized: true,
             store: new RedisStore({
                 client: redisObj
             }),
             key: 'unblocker.sid',
             cookie: {
+                secure: false,
                 path: '/',
-                httpOnly: false,
+                httpOnly: true,
                 maxAge: null
             }
         }))
