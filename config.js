@@ -12,6 +12,8 @@ exports.google_analytics_id = process.env.GA_ID || null;
 // this is used connect to keep session cookies secure. You should change this.
 exports.secret = process.env.SECRET || "correct horse battery staple";
 
+exports.production = process.env.PRODUCTION || false;
+
 // for redis if you're on heroku or using redis-to-go
 exports.redistogo_url = process.env.REDISTOGO_URL || "";
 
